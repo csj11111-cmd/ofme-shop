@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:#f3f1ec;}
+@keyframes fizzSway{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-5px) rotate(1.2deg)}}
+@keyframes fizzPop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#d9d4c8;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+input::placeholder{color:#aaa49a}
+</style>
+</helmet>
+<div style="font-family:'Noto Sans KR',sans-serif; color:#2c2c30; min-height:100vh; background:#f3f1ec;">
+
+  <header style="position:sticky; top:0; z-index:60; background:rgba(255,255,255,.93); backdrop-filter:blur(12px); border-bottom:1px solid #ece8df;">
+    <div style="max-width:1200px; margin:0 auto; padding:13px clamp(14px,3vw,28px); display:flex; align-items:center; gap:clamp(10px,2vw,22px); flex-wrap:wrap;">
+      <div onClick="{{ goList }}" style="cursor:pointer; font-weight:900; font-size:27px; letter-spacing:-1.5px; color:#ff6f61; display:flex; align-items:baseline;">{{ shopName }}<span style="color:#5fd0ad;">.</span></div>
+      <div style="flex:1; min-width:150px; display:flex; align-items:center; gap:8px; background:#f4f1ea; border:1.5px solid #ece8df; border-radius:30px; padding:9px 16px;">
+        <span style="opacity:.4; font-size:16px;">⌕</span>
+        <input placeholder="여름 신상, 브랜드를 검색해보세요" style="border:none; background:transparent; outline:none; width:100%; font-size:14px; font-family:inherit; color:#2c2c30;"/>
+      </div>
+      <div style="display:flex; align-items:center; gap:clamp(12px,2vw,20px); font-size:13px; font-weight:500;">
+        <span style="cursor:pointer; opacity:.65;">♡ 찜</span>
+        <span onClick="{{ goCart }}" style="cursor:pointer; position:relative; font-weight:700; color:#ff6f61;">🛍 장바구니<sc-if value="{{ hasCart }}" hint-placeholder-val="{{ true }}"><span style="position:absolute; top:-9px; right:-12px; background:#ff6f61; color:#fff; font-size:11px; min-width:18px; height:18px; border-radius:9px; display:inline-flex; align-items:center; justify-content:center; padding:0 4px; font-weight:800;">{{ cartCount }}</span></sc-if></span>
+        <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}"><span style="display:flex; align-items:center; gap:9px;"><span style="font-weight:700; color:#2c2c30;">{{ userName }}님</span><span onClick="{{ logout }}" style="cursor:pointer; opacity:.6;">로그아웃</span></span></sc-if>
+        <sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ true }}"><span onClick="{{ goLogin }}" style="cursor:pointer; opacity:.65;">로그인</span></sc-if>
+      </div>
+    </div>
+    <div style="max-width:1200px; margin:0 auto; padding:0 clamp(14px,3vw,28px) 11px; display:flex; gap:7px; overflow-x:auto; flex-wrap:wrap;">
+      <sc-for list="{{ cats }}" as="c" hint-placeholder-count="8">
+        <button onClick="{{ c.onClick }}" style="padding:8px 15px; border-radius:22px; border:1.5px solid {{ c.border }}; cursor:pointer; font-size:13px; font-weight:700; font-family:inherit; white-space:nowrap; background:{{ c.bg }}; color:{{ c.color }};">{{ c.name }}</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+  <main style="max-width:1200px; margin:0 auto; padding:clamp(14px,3vw,28px);">
+    <div style="position:relative; border-radius:22px; overflow:hidden; padding:clamp(28px,5vw,56px) clamp(22px,4vw,52px); background:linear-gradient(115deg,#ff8a7a 0%,#ff6f8e 36%,#7cc8ff 70%,#5fd0ad 100%); color:#fff; margin-bottom:26px;">
+      <div style="position:absolute; right:-40px; top:-40px; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,.16);"></div>
+      <div style="position:absolute; right:80px; bottom:-60px; width:150px; height:150px; border-radius:50%; background:rgba(255,255,255,.12);"></div>
+      <div style="position:relative;">
+        <div style="font-size:13px; font-weight:700; letter-spacing:3px; opacity:.92;">SUMMER FIZZ 2026</div>
+        <div style="font-size:clamp(28px,5vw,48px); font-weight:900; line-height:1.12; margin:10px 0 8px; letter-spacing:-1.5px;">시원하게 떠나는<br>여름 데일리룩</div>
+        <div style="font-size:clamp(14px,2vw,17px); font-weight:500; opacity:.95;">전 상품 최대 50% + 첫 구매 쿠폰 15% · 5만원 이상 무료배송</div>
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+      <div style="font-size:14px; color:#6a655c;"><b style="color:#2c2c30;">{{ productCount }}</b>개의 여름 상품</div>
+      <div style="display:flex; gap:7px;">
+        <sc-for list="{{ sorts }}" as="s" hint-placeholder-count="3">
+          <button onClick="{{ s.onClick }}" style="padding:7px 13px; border-radius:18px; border:none; cursor:pointer; font-size:12.5px; font-weight:700; font-family:inherit; background:{{ s.bg }}; color:{{ s.color }};">{{ s.name }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(165px,1fr)); gap:clamp(12px,1.6vw,22px);">
+      <sc-for list="{{ products }}" as="p" hint-placeholder-count="12">
+        <div onClick="{{ p.onClick }}" onMouseEnter="{{ p.onEnter }}" onMouseLeave="{{ p.onLeave }}" style="cursor:pointer;">
+          <div style="position:relative; width:100%; aspect-ratio:3/4; border-radius:15px; overflow:hidden; background:{{ p.bg }};">
+            <div style="position:absolute; inset:0; opacity:{{ p.idleOp }}; transition:opacity .45s ease;">{{ p.idleEl }}</div>
+            <div style="position:absolute; inset:0; opacity:{{ p.walkOp }}; transition:opacity .45s ease;">{{ p.walkEl }}</div>
+            <sc-if value="{{ p.tag }}" hint-placeholder-val="x"><span style="position:absolute; top:10px; left:10px; background:{{ p.tagBg }}; color:#fff; font-size:11px; font-weight:800; padding:4px 9px; border-radius:20px;">{{ p.tag }}</span></sc-if>
+            <span style="position:absolute; bottom:10px; right:10px; width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.82); display:flex; align-items:center; justify-content:center; font-size:14px; color:#ff6f61;">♡</span>
+          </div>
+          <div style="padding:10px 2px 0;">
+            <div style="font-size:12px; font-weight:800; color:#8a8579;">{{ p.brand }}</div>
+            <div style="font-size:13.5px; margin:3px 0 6px; line-height:1.35; color:#3a3a3e; min-height:36px;">{{ p.name }}</div>
+            <div style="display:flex; align-items:baseline; gap:6px;">
+              <sc-if value="{{ p.discount }}" hint-placeholder-val="x"><span style="color:#ff6f61; font-weight:900; font-size:15px;">{{ p.discount }}%</span></sc-if>
+              <span style="font-weight:900; font-size:15px;">{{ p.priceFmt }}원</span>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:1080px; margin:0 auto; padding:clamp(14px,3vw,28px);">
+    <div style="font-size:13px; color:#8a8579; margin-bottom:18px;"><span onClick="{{ goList }}" style="cursor:pointer;">← 목록</span> &nbsp;·&nbsp; 전체 &gt; {{ cur.cat }}</div>
+    <div style="display:flex; gap:clamp(20px,3vw,46px); flex-wrap:wrap;">
+
+      <div style="flex:1 1 330px; min-width:290px;">
+        <div onMouseEnter="{{ cur.onEnter }}" onMouseLeave="{{ cur.onLeave }}" style="position:relative; width:100%; aspect-ratio:3/4; border-radius:18px; overflow:hidden; background:{{ cur.bg }};">{{ cur.bigEl }}</div>
+        <div style="display:flex; gap:9px; margin-top:11px;">
+          <sc-for list="{{ cur.thumbs }}" as="t" hint-placeholder-count="3">
+            <div onClick="{{ t.onClick }}" style="flex:1; cursor:pointer;">
+              <div style="position:relative; aspect-ratio:1/1; border-radius:12px; overflow:hidden; background:{{ cur.bg }}; border:2px solid {{ t.border }}; box-shadow:0 2px 8px rgba(0,0,0,.05);">{{ t.el }}<span style="position:absolute; top:7px; left:7px; background:rgba(20,20,22,.5); color:#fff; font-size:9px; font-weight:800; letter-spacing:.5px; padding:2px 6px; border-radius:20px;">{{ t.num }}</span></div>
+              <div style="text-align:center; font-size:9.5px; letter-spacing:1.5px; margin-top:6px; font-weight:800; color:{{ t.color }};">{{ t.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:1 1 330px; min-width:290px;">
+        <div style="font-size:13px; font-weight:800; color:#8a8579;">{{ cur.brand }}</div>
+        <div style="font-size:clamp(19px,2.6vw,24px); font-weight:700; line-height:1.3; margin:6px 0 8px;">{{ cur.name }}</div>
+        <div style="font-size:12.5px; color:#8a8579; margin-bottom:14px;">★ 4.8 · 리뷰 {{ cur.reviews }}개</div>
+        <div style="display:flex; align-items:baseline; gap:9px; padding-bottom:18px; border-bottom:1px solid #ece8df;">
+          <sc-if value="{{ cur.discount }}" hint-placeholder-val="x"><span style="color:#ff6f61; font-weight:900; font-size:clamp(22px,3vw,28px);">{{ cur.discount }}%</span></sc-if>
+          <span style="font-weight:900; font-size:clamp(22px,3vw,28px);">{{ cur.priceFmt }}원</span>
+          <sc-if value="{{ cur.origFmt }}" hint-placeholder-val="x"><span style="color:#b5b0a6; text-decoration:line-through; font-size:15px;">{{ cur.origFmt }}원</span></sc-if>
+        </div>
+
+        <div style="padding:18px 0 4px;">
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:11px;"><span style="font-weight:800;">색상</span><span style="color:#6a655c;">{{ cur.colorName }}</span></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <sc-for list="{{ cur.colorOpts }}" as="co" hint-placeholder-count="3">
+              <div onClick="{{ co.onClick }}" title="{{ co.name }}" style="width:34px; height:34px; border-radius:50%; cursor:pointer; background:{{ co.hex }}; box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.08); outline:2.5px solid {{ co.ring }}; outline-offset:2px;"></div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="padding:20px 0 6px;">
+          <div style="font-size:13.5px; font-weight:800; margin-bottom:11px;">사이즈</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <sc-for list="{{ cur.sizeOpts }}" as="so" hint-placeholder-count="3">
+              <button onClick="{{ so.onClick }}" style="position:relative; min-width:62px; padding:11px 14px; border-radius:11px; border:1.5px solid {{ so.border }}; cursor:pointer; font-family:inherit; font-size:13.5px; font-weight:700; background:{{ so.bg }}; color:{{ so.color }};">{{ so.label }}<sc-if value="{{ so.rec }}" hint-placeholder-val="x"><span style="position:absolute; top:-9px; right:-7px; background:#5fd0ad; color:#fff; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:10px;">추천</span></sc-if></button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="margin-top:18px; background:#faf8f3; border:1px solid #ece8df; border-radius:16px; padding:18px;">
+          <div style="font-size:13.5px; font-weight:800; margin-bottom:4px;">📏 내 사이즈 찾기</div>
+          <div style="font-size:12px; color:#8a8579; margin-bottom:13px;">키와 체중을 입력하면 딱 맞는 사이즈를 추천해드려요</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <label style="flex:1; min-width:110px; font-size:12px; color:#6a655c;">키 (cm)
+              <input value="{{ heightVal }}" onInput="{{ onHeight }}" inputmode="numeric" placeholder="예: 163" style="margin-top:5px; width:100%; padding:10px 12px; border:1.5px solid #e2ddd2; border-radius:10px; font-size:14px; font-family:inherit; outline:none; background:#fff;"/></label>
+            <label style="flex:1; min-width:110px; font-size:12px; color:#6a655c;">체중 (kg)
+              <input value="{{ weightVal }}" onInput="{{ onWeight }}" inputmode="numeric" placeholder="예: 52" style="margin-top:5px; width:100%; padding:10px 12px; border:1.5px solid #e2ddd2; border-radius:10px; font-size:14px; font-family:inherit; outline:none; background:#fff;"/></label>
+          </div>
+          <sc-if value="{{ rec.show }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #e2ddd2;">
+              <div style="font-size:13px; color:#3a3a3e;">추천 사이즈는 <b style="color:#ff6f61; font-size:16px;">{{ rec.size }}</b> 예요 · 예상 핏 <b>{{ rec.fitLabel }}</b></div>
+              <div style="position:relative; height:9px; border-radius:6px; margin:14px 2px 6px; background:linear-gradient(90deg,#74b6f2,#5fd0ad,#ff8a7a);">
+                <div style="position:absolute; top:50%; left:{{ rec.fitPct }}%; transform:translate(-50%,-50%); width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.25); border:3px solid #2c2c30;"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; color:#8a8579; font-weight:600;"><span>타이트</span><span>정사이즈</span><span>루즈</span></div>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:20px;">
+          <span style="font-size:13.5px; font-weight:700;">수량</span>
+          <div style="display:flex; align-items:center; gap:0; border:1.5px solid #e2ddd2; border-radius:11px; overflow:hidden;">
+            <button onClick="{{ cur.qtyDec }}" style="width:38px; height:38px; border:none; background:#fff; cursor:pointer; font-size:18px; color:#6a655c;">−</button>
+            <span style="width:42px; text-align:center; font-weight:700; font-size:15px;">{{ qty }}</span>
+            <button onClick="{{ cur.qtyInc }}" style="width:38px; height:38px; border:none; background:#fff; cursor:pointer; font-size:18px; color:#6a655c;">+</button>
+          </div>
+        </div>
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin:18px 0; padding-top:16px; border-top:1px solid #ece8df;">
+          <span style="font-size:14px; font-weight:700;">총 상품금액</span>
+          <span style="font-size:clamp(20px,3vw,26px); font-weight:900; color:#ff6f61;">{{ cur.totalFmt }}원</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button onClick="{{ cur.addCart }}" style="flex:1; padding:16px; border-radius:13px; border:1.5px solid #ff6f61; background:#fff; color:#ff6f61; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">장바구니 담기</button>
+          <button onClick="{{ cur.buyNow }}" style="flex:1; padding:16px; border-radius:13px; border:none; background:#ff6f61; color:#fff; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">바로 구매</button>
+        </div>
+      </div>
+    </div>
+
+    <section style="margin-top:48px;">
+      <div style="font-size:16px; font-weight:800; margin-bottom:14px;">상품 정보</div>
+      <div style="font-size:14px; line-height:1.9; color:#544f47; background:#faf8f3; border-radius:16px; padding:22px;">{{ cur.desc }}</div>
+      <div style="display:flex; gap:8px; align-items:center; margin-top:14px; padding:13px 18px; background:#f3fbf8; border-radius:12px; font-size:13px; color:#3a9b7e; font-weight:700;">📷 {{ cur.modelInfo }}</div>
+      <div style="margin-top:14px; border:1px solid #ece8df; border-radius:14px; overflow:hidden;">
+        <sc-for list="{{ cur.specRows }}" as="s" hint-placeholder-count="5">
+          <div style="display:flex; border-top:1px solid #f0ece3; font-size:13.5px;">
+            <div style="width:96px; flex:none; padding:12px 16px; background:#faf8f3; font-weight:700; color:#6a655c;">{{ s.k }}</div>
+            <div style="padding:12px 16px; color:#3a3a3e;">{{ s.v }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="margin-top:38px; margin-bottom:30px;">
+      <div style="font-size:16px; font-weight:800; margin-bottom:14px;">사이즈 안내 <span style="font-size:12px; color:#8a8579; font-weight:500;">(단위: cm)</span></div>
+      <div style="overflow-x:auto; border:1px solid #ece8df; border-radius:16px;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px; min-width:380px;">
+          <thead>
+            <tr style="background:#faf8f3;">
+              <th style="padding:13px 14px; text-align:left; font-weight:800; color:#3a3a3e;">사이즈</th>
+              <sc-for list="{{ cur.sizeCols }}" as="col" hint-placeholder-count="4"><th style="padding:13px 14px; text-align:center; font-weight:700; color:#6a655c;">{{ col }}</th></sc-for>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ cur.sizeRows }}" as="r" hint-placeholder-count="3">
+              <tr style="border-top:1px solid #f0ece3; background:{{ r.bg }};">
+                <td style="padding:13px 14px; font-weight:800; color:{{ r.color }};">{{ r.size }}<sc-if value="{{ r.rec }}" hint-placeholder-val="x"><span style="margin-left:6px; background:#5fd0ad; color:#fff; font-size:9.5px; font-weight:800; padding:2px 6px; border-radius:9px;">추천</span></sc-if></td>
+                <sc-for list="{{ r.vals }}" as="v" hint-placeholder-count="4"><td style="padding:13px 14px; text-align:center; color:#544f47;">{{ v }}</td></sc-for>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section style="margin-top:38px;">
+      <div style="font-size:16px; font-weight:800; margin-bottom:14px;">소재 &amp; 관리방법</div>
+      <div style="display:flex; flex-direction:column; gap:9px; background:#faf8f3; border-radius:16px; padding:20px 22px;">
+        <sc-for list="{{ cur.care }}" as="c" hint-placeholder-count="3">
+          <div style="display:flex; gap:9px; align-items:flex-start; font-size:13.5px; color:#544f47;"><span style="color:#5fd0ad; font-weight:900;">·</span>{{ c }}</div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="margin-top:38px;">
+      <div style="font-size:16px; font-weight:800; margin-bottom:14px;">배송 · 교환/반품 안내</div>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <div style="flex:1 1 240px; background:#fff; border:1px solid #ece8df; border-radius:14px; padding:18px;">
+          <div style="font-size:13.5px; font-weight:800; margin-bottom:7px;">🚚 배송</div>
+          <div style="font-size:13px; color:#6a655c; line-height:1.7;">{{ cur.shipDesc }}</div>
+        </div>
+        <div style="flex:1 1 240px; background:#fff; border:1px solid #ece8df; border-radius:14px; padding:18px;">
+          <div style="font-size:13.5px; font-weight:800; margin-bottom:7px;">🔁 교환/반품</div>
+          <div style="font-size:13px; color:#6a655c; line-height:1.7;">{{ cur.returnDesc }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:38px; margin-bottom:30px;">
+      <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:14px;">
+        <div style="font-size:16px; font-weight:800;">리뷰</div>
+        <div style="font-size:13px; color:#ff6f61; font-weight:800;">★ 4.8</div>
+        <div style="font-size:12.5px; color:#8a8579;">리뷰 {{ cur.reviews }}개</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <sc-for list="{{ cur.reviewList }}" as="rv" hint-placeholder-count="3">
+          <div style="background:#fff; border:1px solid #ece8df; border-radius:14px; padding:16px 18px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+              <div style="display:flex; align-items:center; gap:8px;"><span style="font-size:13px; font-weight:800; color:#3a3a3e;">{{ rv.name }}</span><span style="font-size:11.5px; color:#a8a399;">{{ rv.meta }}</span></div>
+              <span style="font-size:12.5px; color:#ffb020; letter-spacing:1px;">{{ rv.stars }}</span>
+            </div>
+            <div style="font-size:13.5px; color:#544f47; line-height:1.6;">{{ rv.text }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isCart }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:880px; margin:0 auto; padding:clamp(14px,3vw,28px);">
+    <div style="font-size:clamp(20px,3vw,26px); font-weight:900; margin-bottom:20px;">장바구니 <span style="color:#ff6f61;">{{ cartCount }}</span></div>
+
+    <sc-if value="{{ hasCart }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 4px; font-size:13px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700;"><input type="checkbox" checked="{{ allSelected }}" onChange="{{ onSelectAll }}" style="width:17px; height:17px; accent-color:#ff6f61; cursor:pointer;"/>전체 선택</label>
+        <button onClick="{{ onDeleteSelected }}" style="border:1px solid #e2ddd2; background:#fff; padding:7px 13px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; color:#6a655c;">선택삭제</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin:8px 0 22px;">
+        <sc-for list="{{ cartItems }}" as="it" hint-placeholder-count="2">
+          <div style="display:flex; gap:13px; align-items:center; background:#fff; border:1px solid #ece8df; border-radius:16px; padding:14px;">
+            <input type="checkbox" checked="{{ it.checked }}" onChange="{{ it.onToggle }}" style="width:17px; height:17px; accent-color:#ff6f61; cursor:pointer; flex:none;"/>
+            <div style="width:74px; height:96px; flex:none; border-radius:11px; overflow:hidden; background:{{ it.bg }};">{{ it.el }}</div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:11.5px; font-weight:800; color:#8a8579;">{{ it.brand }}</div>
+              <div style="font-size:13.5px; font-weight:600; margin:2px 0 5px; line-height:1.3;">{{ it.name }}</div>
+              <div style="font-size:11.5px; color:#8a8579;">옵션: {{ it.colorName }} / {{ it.size }}</div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-top:9px;">
+                <div style="display:flex; align-items:center; border:1.5px solid #e2ddd2; border-radius:9px; overflow:hidden;">
+                  <button onClick="{{ it.onDec }}" style="width:30px; height:30px; border:none; background:#fff; cursor:pointer; font-size:16px; color:#6a655c;">−</button>
+                  <span style="width:34px; text-align:center; font-weight:700; font-size:13.5px;">{{ it.qty }}</span>
+                  <button onClick="{{ it.onInc }}" style="width:30px; height:30px; border:none; background:#fff; cursor:pointer; font-size:16px; color:#6a655c;">+</button>
+                </div>
+                <span style="font-weight:900; font-size:15px;">{{ it.priceFmt }}원</span>
+              </div>
+            </div>
+            <button onClick="{{ it.onRemove }}" style="flex:none; align-self:flex-start; border:none; background:transparent; cursor:pointer; font-size:18px; color:#c5c0b6;">✕</button>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:#fff; border:1px solid #ece8df; border-radius:16px; padding:18px; margin-bottom:16px;">
+        <div style="font-size:13.5px; font-weight:800; margin-bottom:13px;">쿠폰 · 적립금</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <select onChange="{{ onCoupon }}" style="flex:1; min-width:150px; padding:11px 12px; border:1.5px solid #e2ddd2; border-radius:10px; font-size:13.5px; font-family:inherit; background:#fff; cursor:pointer; color:#2c2c30;">
+            <sc-for list="{{ couponOpts }}" as="cp" hint-placeholder-count="4"><option value="{{ cp.value }}" selected="{{ cp.sel }}">{{ cp.label }}</option></sc-for>
+          </select>
+          <div style="flex:1; min-width:150px; display:flex; gap:7px;">
+            <input value="{{ pointsVal }}" onInput="{{ onPoints }}" inputmode="numeric" placeholder="적립금 (보유 3,200)" style="flex:1; min-width:0; padding:11px 12px; border:1.5px solid #e2ddd2; border-radius:10px; font-size:13.5px; font-family:inherit; outline:none; background:#fff;"/>
+            <button onClick="{{ onAllPoints }}" style="flex:none; padding:0 13px; border:1.5px solid #e2ddd2; background:#faf8f3; border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; color:#6a655c; white-space:nowrap;">전액</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff; border:1px solid #ece8df; border-radius:16px; padding:20px;">
+        <div style="display:flex; flex-direction:column; gap:11px; font-size:14px;">
+          <div style="display:flex; justify-content:space-between;"><span style="color:#6a655c;">상품금액</span><span style="font-weight:700;">{{ sum.goodsFmt }}원</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#6a655c;">상품할인</span><span style="font-weight:700; color:#ff6f61;">−{{ sum.discFmt }}원</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#6a655c;">쿠폰할인</span><span style="font-weight:700; color:#ff6f61;">−{{ sum.couponFmt }}원</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#6a655c;">적립금 사용</span><span style="font-weight:700; color:#ff6f61;">−{{ sum.pointsFmt }}원</span></div>
+          <div style="display:flex; justify-content:space-between;"><span style="color:#6a655c;">배송비</span><span style="font-weight:700;">{{ sum.shipLabel }}</span></div>
+        </div>
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin-top:16px; padding-top:16px; border-top:2px solid #f0ece3;">
+          <span style="font-size:15px; font-weight:800;">총 결제금액</span>
+          <span style="font-size:clamp(22px,3.5vw,30px); font-weight:900; color:#ff6f61;">{{ sum.totalFmt }}원</span>
+        </div>
+        <button style="width:100%; margin-top:18px; padding:17px; border-radius:14px; border:none; background:#ff6f61; color:#fff; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit;">{{ sum.totalFmt }}원 주문하기</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align:center; padding:80px 20px; background:#fff; border:1px solid #ece8df; border-radius:20px;">
+        <div style="font-size:46px; margin-bottom:14px;">🛍</div>
+        <div style="font-size:16px; font-weight:700; margin-bottom:6px;">장바구니가 비었어요</div>
+        <div style="font-size:13.5px; color:#8a8579; margin-bottom:22px;">여름 신상을 둘러보고 마음에 드는 옷을 담아보세요</div>
+        <button onClick="{{ goList }}" style="padding:14px 28px; border-radius:12px; border:none; background:#ff6f61; color:#fff; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;">쇼핑 계속하기</button>
+      </div>
+    </sc-if>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:420px; margin:0 auto; padding:clamp(36px,6vw,72px) 24px;">
+    <div style="text-align:center; margin-bottom:34px;">
+      <div style="font-weight:900; font-size:34px; letter-spacing:-1.5px; color:#ff6f61;">{{ shopName }}<span style="color:#5fd0ad;">.</span></div>
+      <div style="font-size:13.5px; color:#8a8579; margin-top:8px;">나로부터 시작되는 모든 무드 — 오롯이 나를 입다</div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:11px;">
+      <label style="font-size:12px; color:#6a655c; font-weight:600;">이메일
+        <input value="{{ authEmail }}" onInput="{{ onAuthEmail }}" placeholder="example@fizz.com" style="margin-top:6px; width:100%; padding:14px 15px; border:1.5px solid #e2ddd2; border-radius:12px; font-size:14px; font-family:inherit; outline:none; background:#fff;"/></label>
+      <label style="font-size:12px; color:#6a655c; font-weight:600;">비밀번호
+        <input value="{{ authPw }}" onInput="{{ onAuthPw }}" type="password" placeholder="비밀번호를 입력하세요" style="margin-top:6px; width:100%; padding:14px 15px; border:1.5px solid #e2ddd2; border-radius:12px; font-size:14px; font-family:inherit; outline:none; background:#fff;"/></label>
+      <sc-if value="{{ authError }}" hint-placeholder-val="x"><div style="font-size:12.5px; color:#ff5247; font-weight:600;">{{ authError }}</div></sc-if>
+      <div style="display:flex; align-items:center; justify-content:space-between; font-size:12.5px; color:#6a655c; margin:2px 0;">
+        <label style="display:flex; align-items:center; gap:7px; cursor:pointer;"><input type="checkbox" checked="{{ autoLogin }}" onChange="{{ onAutoLogin }}" style="width:16px; height:16px; accent-color:#ff6f61; cursor:pointer;"/>로그인 상태 유지</label>
+        <span style="cursor:pointer;">아이디 · 비밀번호 찾기</span>
+      </div>
+      <button onClick="{{ doLogin }}" style="margin-top:6px; width:100%; padding:16px; border-radius:13px; border:none; background:#ff6f61; color:#fff; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">로그인</button>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px; margin:24px 0; color:#c5c0b6; font-size:12px;"><span style="flex:1; height:1px; background:#ece8df;"></span>SNS 간편 로그인<span style="flex:1; height:1px; background:#ece8df;"></span></div>
+    <div style="display:flex; flex-direction:column; gap:9px;">
+      <button onClick="{{ doLogin }}" style="width:100%; padding:14px; border-radius:12px; border:none; background:#FEE500; color:#3a2d2d; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;">카카오로 시작하기</button>
+      <button onClick="{{ doLogin }}" style="width:100%; padding:14px; border-radius:12px; border:none; background:#03C75A; color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;">네이버로 시작하기</button>
+      <button onClick="{{ doLogin }}" style="width:100%; padding:14px; border-radius:12px; border:1.5px solid #e2ddd2; background:#fff; color:#3a3a3e; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;">Google로 시작하기</button>
+    </div>
+    <div style="text-align:center; margin-top:26px; font-size:13px; color:#8a8579;">아직 회원이 아니신가요? <span onClick="{{ goSignup }}" style="cursor:pointer; color:#ff6f61; font-weight:800;">회원가입</span></div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width:440px; margin:0 auto; padding:clamp(28px,5vw,56px) 24px;">
+    <div style="font-size:13px; color:#8a8579; margin-bottom:14px;"><span onClick="{{ goLogin }}" style="cursor:pointer;">← 로그인</span></div>
+    <div style="font-size:clamp(22px,3.4vw,28px); font-weight:900; letter-spacing:-1px; margin-bottom:6px;">회원가입</div>
+    <div style="font-size:13.5px; color:#8a8579; margin-bottom:26px;">가입하고 첫 구매 <b style="color:#ff6f61;">15% 쿠폰</b>을 받아보세요</div>
+    <div style="display:flex; flex-direction:column; gap:13px;">
+      <label style="font-size:12px; color:#6a655c; font-weight:600;">이름
+        <input value="{{ suName }}" onInput="{{ onSuName }}" placeholder="이름" style="margin-top:6px; width:100%; padding:13px 15px; border:1.5px solid #e2ddd2; border-radius:12px; font-size:14px; font-family:inherit; outline:none; background:#fff;"/></label>
+      <label style="font-size:12px; color:#6a655c; font-weight:600;">이메일
+        <input value="{{ suEmail }}" onInput="{{ onSuEmail }}" placeholder="example@fizz.com" style="margin-top:6px; width:100%; padding:13px 15px; border:1.5px solid #e2ddd2; border-radius:12px; font-size:14px; font-family:inherit; outline:none; background:#fff;"/></label>
+      <div style="display:flex; gap:10px;">
+        <label style="flex:1; font-size:12px; color:#6a655c; font-weight:600;">비밀번호
+          <input value="{{ suPw }}" onInput="{{ onSuPw }}" type="password" placeholder="8자 이상" style="margin-top:6px; width:100%; padding:13px 15px; border:1.5px solid #e2ddd2; border-radius:12px; font-size:14px; font-family:inherit; outline:none; background:#fff; box-sizing:border-box;"/></label>
+        <label style="flex:1; font-size:12px; color:#6a655c; font-weight:600;">비밀번호 확인
+          <input value="{{ suPw2 }}" onInput="{{ onSuPw2 }}" type="password" placeholder="다시 입력" style="margin-top:6px; width:100%; padding:13px 15px; border:1.5px solid #e2ddd2; border-radius:12px; font-size:14px; font-family:inherit; outline:none; background:#fff; box-sizing:border-box;"/></label>
+      </div>
+      <label style="font-size:12px; color:#6a655c; font-weight:600;">휴대폰 번호
+        <input value="{{ suPhone }}" onInput="{{ onSuPhone }}" inputmode="numeric" placeholder="010-0000-0000" style="margin-top:6px; width:100%; padding:13px 15px; border:1.5px solid #e2ddd2; border-radius:12px; font-size:14px; font-family:inherit; outline:none; background:#fff;"/></label>
+    </div>
+    <div style="margin-top:20px; background:#faf8f3; border:1px solid #ece8df; border-radius:14px; padding:16px 18px; display:flex; flex-direction:column; gap:11px;">
+      <label style="display:flex; align-items:center; gap:9px; cursor:pointer; font-size:14px; font-weight:800;"><input type="checkbox" checked="{{ agreeAll }}" onChange="{{ onAgreeAll }}" style="width:18px; height:18px; accent-color:#ff6f61; cursor:pointer;"/>전체 동의</label>
+      <div style="height:1px; background:#ece8df;"></div>
+      <label style="display:flex; align-items:center; gap:9px; cursor:pointer; font-size:13px; color:#544f47;"><input type="checkbox" checked="{{ agree1 }}" onChange="{{ onAgree1 }}" style="width:16px; height:16px; accent-color:#ff6f61; cursor:pointer;"/>(필수) 이용약관 동의</label>
+      <label style="display:flex; align-items:center; gap:9px; cursor:pointer; font-size:13px; color:#544f47;"><input type="checkbox" checked="{{ agree2 }}" onChange="{{ onAgree2 }}" style="width:16px; height:16px; accent-color:#ff6f61; cursor:pointer;"/>(필수) 개인정보 수집 · 이용 동의</label>
+      <label style="display:flex; align-items:center; gap:9px; cursor:pointer; font-size:13px; color:#544f47;"><input type="checkbox" checked="{{ agree3 }}" onChange="{{ onAgree3 }}" style="width:16px; height:16px; accent-color:#ff6f61; cursor:pointer;"/>(선택) 마케팅 정보 수신 동의</label>
+    </div>
+    <sc-if value="{{ suError }}" hint-placeholder-val="x"><div style="font-size:12.5px; color:#ff5247; font-weight:600; margin-top:12px;">{{ suError }}</div></sc-if>
+    <button onClick="{{ doSignup }}" style="margin-top:20px; width:100%; padding:16px; border-radius:13px; border:none; background:#ff6f61; color:#fff; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;">가입하고 쿠폰 받기</button>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; left:50%; bottom:32px; transform:translateX(-50%); z-index:100; background:#2c2c30; color:#fff; padding:14px 22px; border-radius:30px; font-size:13.5px; font-weight:600; box-shadow:0 8px 24px rgba(0,0,0,.22); animation:fizzPop .25s ease;">{{ toast }}</div>
+  </sc-if>
+
+  <footer style="border-top:1px solid #ece8df; margin-top:40px; padding:30px clamp(14px,3vw,28px); text-align:center; color:#a8a399; font-size:12px;">
+    <div style="font-weight:900; font-size:18px; color:#ff6f61; letter-spacing:-1px;">{{ shopName }}<span style="color:#5fd0ad;">.</span></div>
+    <div style="margin-top:8px;">여성 패션 쇼핑몰 · 가상 데모 · 모델/상품 이미지는 일러스트 플레이스홀더입니다</div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:900},&quot;shopName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Of Me&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'list', cat: '전체', sort: '인기순',
+    curId: 1, curColor: null, curSize: null, qty: 1, detailImg: 'model',
+    height: '', weight: '', hoverId: null, detailHover: false,
+    cart: [], selected: {}, coupon: 0, points: '', toast: '',
+    loggedIn: false, userName: '', autoLogin: true,
+    authEmail: '', authPw: '', authError: '',
+    suName: '', suEmail: '', suPw: '', suPw2: '', suPhone: '', suError: '',
+    agree1: false, agree2: false, agree3: false
+  };
+
+  PAL = { white:'#f1ede4', ivory:'#e9ddc6', coral:'#ff7a6b', mint:'#5fd0ad', sky:'#74b6f2', lemon:'#ffd95e', lilac:'#c4a6f0', pink:'#ff9ec1', black:'#33333a', navy:'#34416b', sand:'#dcc196', aqua:'#46c6d4', olive:'#9aa15f', denim:'#8aa6c8', red:'#e23b2e', cobalt:'#2a4bd0' };
+  KNAME = { white:'화이트', ivory:'아이보리', coral:'코랄', mint:'민트', sky:'스카이블루', lemon:'레몬', lilac:'라일락', pink:'핑크', black:'블랙', navy:'네이비', sand:'샴페인', aqua:'아쿠아', olive:'올리브', denim:'데님', red:'레드', cobalt:'코발트블루' };
+
+  CATS = ['전체','반팔티','나시','원피스','수영복','운동복','반바지','스커트'];
+
+  DESC = {
+    tee:'데일리로 입기 좋은 코튼 소재의 베이직 반팔이에요. 적당한 두께감으로 비침 없이 활용도가 높고, 어떤 하의에도 잘 어울립니다.',
+    tank:'시원한 슬리브리스 디자인으로 한여름 데일리룩에 딱이에요. 단독으로도, 셔츠 안에 레이어드로도 좋아요.',
+    dress:'한 장으로 코디가 완성되는 여름 원피스. 셔링과 플레어 실루엣으로 체형 커버까지 잡았어요.',
+    swim:'트렌디한 디자인의 여름 필수 수영복. 신축성 좋은 원단으로 활동성과 핏을 모두 챙겼어요. 물놀이는 물론 비치웨어로도 완벽.',
+    active:'땀을 빠르게 배출하는 쿨링 기능성 원단. 요가·러닝·홈트까지 데일리 운동복으로 활용도 만점이에요.',
+    shorts:'어디에나 매치하기 좋은 여름 반바지. 편안한 핏과 깔끔한 실루엣으로 매일 손이 가는 아이템.',
+    skirt:'페미닌한 무드의 여름 스커트. 자연스러운 플리츠/랩 디테일로 스타일링이 쉬워요.'
+  };
+
+  FABRIC = { tee:'코튼 95%, 스판덱스 5%', tank:'레이온 60%, 린넨 40%', dress:'폴리에스터 100%', swim:'나일론 82%, 스판덱스 18%', active:'폴리에스터 88%, 스판덱스 12%', shorts:'코튼 100%', skirt:'폴리에스터 95%, 스판덱스 5%' };
+  FIT = { tee:'슬림 레귤러', tank:'레귤러', dress:'플레어', swim:'밴드 핏', active:'컴프레션', shorts:'와이드', skirt:'A라인' };
+
+  PRODUCTS = [
+    { id:25, cat:'원피스', g:'dress', brand:'plage', name:'새틴 카울넥 슬립 미니 원피스', price:42900, colors:['lemon','black','pink'], tag:'NEW' },
+    { id:26, cat:'나시', g:'tank', brand:'OHLALA', name:'레이스 트림 캐미솔 탑', price:19900, colors:['white','black','pink'], tag:'NEW' },
+    { id:27, cat:'스커트', g:'skirt', brand:'cintage', name:'새틴 바이어스 슬립 미디 스커트', price:32900, colors:['sand','black','sky'], tag:'급상승' },
+    { id:28, cat:'원피스', g:'dress', brand:'Bonjour', name:'레이스 슬립 롱 원피스', price:48900, colors:['black','ivory','coral'], tag:'NEW' },
+    { id:29, cat:'반바지', g:'shorts', brand:'lazy daze', name:'배럴 커브드 데님 반바지', price:35900, colors:['denim','black','sky'], tag:'1위' },
+    { id:30, cat:'스커트', g:'skirt', brand:'soda pop', name:'디스트로이드 데님 미니 스커트', price:29900, colors:['sky','denim','white'], tag:'NEW' },
+    { id:31, cat:'반팔티', g:'tee', brand:'mellow', name:'비비드 크롭 베이비 티', price:15900, colors:['red','black','white'], tag:'급상승' },
+    { id:32, cat:'반팔티', g:'tee', brand:'soda pop', name:'코발트 슬림 크롭 탑', price:16900, colors:['cobalt','black','white'], tag:'NEW' },
+    { id:33, cat:'반팔티', g:'tee', brand:'cintage', name:'스트라이프 크롭 니트 탑', price:23900, colors:['sky','coral','black'], tag:'NEW' },
+    { id:34, cat:'나시', g:'tank', brand:'OHLALA', name:'리본 셔링 뷔스티에 탑', price:21900, colors:['pink','white','black'], tag:'급상승' },
+    { id:35, cat:'반팔티', g:'tee', brand:'moonrise', name:'시어 메쉬 레이어드 탑', price:18900, colors:['black','white'], tag:'NEW' },
+    { id:36, cat:'원피스', g:'dress', brand:'OHLALA', name:'발레코어 플로럴 미니 원피스', price:36900, colors:['pink','sky','lemon'], tag:'1위' },
+    { id:1, cat:'반팔티', g:'tee', brand:'mellow', name:'코튼 베이직 크롭 반팔 티', price:16900, orig:23000, colors:['white','coral','sky','black'], tag:'급상승' },
+    { id:2, cat:'반팔티', g:'tee', brand:'soda pop', name:'오버핏 레터링 반팔 티셔츠', price:19900, colors:['white','lemon','mint'] },
+    { id:3, cat:'반팔티', g:'tee', brand:'DAILY UP', name:'슬림 라운드넥 반팔 티', price:14900, orig:19000, colors:['black','white','pink'], tag:'쿠폰' },
+    { id:4, cat:'반팔티', g:'tee', brand:'cintage', name:'스트라이프 보트넥 반팔', price:22900, colors:['sky','coral','ivory'] },
+    { id:5, cat:'반팔티', g:'tee', brand:'moonrise', name:'워싱 머슬핏 반팔 티', price:18900, colors:['olive','sand','black'], tag:'급상승' },
+    { id:6, cat:'나시', g:'tank', brand:'Salt&Sea', name:'린넨 슬리브리스 탑', price:24900, colors:['ivory','lemon','mint'], tag:'1위' },
+    { id:7, cat:'나시', g:'tank', brand:'OHLALA', name:'셔링 뷔스티에 나시', price:21900, orig:27000, colors:['white','pink','lilac'], tag:'쿠폰' },
+    { id:8, cat:'나시', g:'tank', brand:'mellow', name:'베이직 골지 나시', price:9900, colors:['white','black','coral'] },
+    { id:9, cat:'원피스', g:'dress', brand:'OHLALA', name:'플라워 셔링 미니 원피스', price:39900, orig:52000, colors:['pink','sky','white'], tag:'1위' },
+    { id:10, cat:'원피스', g:'dress', brand:'Bonjour', name:'린넨 뷔스티에 롱 원피스', price:46900, colors:['ivory','sand','olive'] },
+    { id:11, cat:'원피스', g:'dress', brand:'plage', name:'플리츠 슬립 원피스', price:33900, orig:42000, colors:['coral','lilac','navy'], tag:'쿠폰' },
+    { id:12, cat:'원피스', g:'dress', brand:'moonrise', name:'스트라이프 셔츠 원피스', price:35900, colors:['sky','white','lemon'] },
+    { id:13, cat:'원피스', g:'dress', brand:'cintage', name:'라운드넥 셔링 미니 원피스', price:28900, colors:['black','pink','mint'], tag:'급상승' },
+    { id:14, cat:'수영복', g:'swim', brand:'plage', name:'트로피컬 트라이앵글 비키니', price:34900, colors:['coral','aqua','black'], tag:'1위' },
+    { id:15, cat:'수영복', g:'swim', brand:'Salt&Sea', name:'하이웨스트 비키니 세트', price:38900, orig:46000, colors:['navy','lilac','white'], tag:'쿠폰' },
+    { id:16, cat:'수영복', g:'swim', brand:'plage', name:'원숄더 모노키니', price:41900, colors:['black','coral','mint'] },
+    { id:17, cat:'운동복', g:'active', brand:'Active U', name:'쿨링 크롭 요가 세트', price:42000, colors:['mint','lilac','black'], tag:'급상승' },
+    { id:18, cat:'운동복', g:'active', brand:'Active U', name:'시밍 래쉬가드 세트', price:39900, orig:49000, colors:['navy','coral','aqua'], tag:'쿠폰' },
+    { id:19, cat:'운동복', g:'active', brand:'moonrise', name:'에어로 러닝 탱크+쇼츠', price:31900, colors:['black','lemon','sky'] },
+    { id:20, cat:'반바지', g:'shorts', brand:'lazy daze', name:'와이드 데님 반바지', price:27900, orig:33000, colors:['denim','white','black'], tag:'급상승' },
+    { id:21, cat:'반바지', g:'shorts', brand:'DAILY UP', name:'코튼 밴딩 숏팬츠', price:17900, colors:['ivory','coral','olive'] },
+    { id:22, cat:'반바지', g:'shorts', brand:'soda pop', name:'카고 버뮤다 쇼츠', price:24900, colors:['sand','black','mint'] },
+    { id:23, cat:'스커트', g:'skirt', brand:'cintage', name:'플리츠 미니 스커트', price:22900, orig:28000, colors:['black','pink','sky'], tag:'1위' },
+    { id:24, cat:'스커트', g:'skirt', brand:'Bonjour', name:'린넨 랩 미디 스커트', price:29900, colors:['ivory','olive','coral'] }
+  ];
+
+  SIZECLASS = { tee:'top', tank:'top', dress:'dress', swim:'swim', active:'active', shorts:'bottom', skirt:'bottom' };
+  CHARTS = {
+    top:   { cols:['어깨','가슴단면','총장','소매'],   rows:{ S:[37,46,58,18], M:[39,49,61,20], L:[41,52,64,22] } },
+    dress: { cols:['어깨','가슴단면','총장','허리단면'], rows:{ S:[35,44,84,33], M:[37,47,88,36], L:[39,50,92,39] } },
+    swim:  { cols:['가슴','허리','힙'],               rows:{ S:[80,62,86], M:[85,67,91], L:[90,72,96] } },
+    active:{ cols:['가슴단면','허리','상의총장','하의총장'], rows:{ S:[40,28,38,88], M:[42,30,40,91], L:[44,32,42,94] } },
+    bottom:{ cols:['허리단면','힙단면','총장','밑단'],  rows:{ S:[33,46,38,52], M:[35,48,40,54], L:[37,50,42,56] } }
+  };
+
+  // ---------- helpers ----------
+  fmt(n){ return Math.max(0, Math.round(n)).toLocaleString('ko-KR'); }
+  hex(c){ return this.PAL[c] || c; }
+  hexA(c, a){ const h=this.hex(c).replace('#',''); const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16); return `rgba(${r},${g},${b},${a})`; }
+  bgFor(p){ return `linear-gradient(155deg, ${this.hexA(p.colors[0],0.20)}, ${this.hexA(p.colors[1]||p.colors[0],0.10)} 60%, #ffffff)`; }
+  el(html){ return React.createElement('div', { style:{ width:'100%', height:'100%' }, dangerouslySetInnerHTML:{ __html: html } }); }
+  imgEl(src, fallback){ return React.createElement('img', { src, loading:'lazy', onError:(e)=>{ if(fallback && e.target.src.indexOf(fallback)<0) e.target.src=fallback; }, style:{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top center', display:'block' } }); }
+  cardFocal(g){ const m={ tee:[1.42,'50% 44%'], tank:[1.42,'50% 44%'], dress:[1.22,'50% 42%'], swim:[1.3,'50% 46%'], active:[1.32,'50% 46%'], shorts:[1.46,'50% 62%'], skirt:[1.4,'50% 58%'] }; return m[g]||[1.3,'50% 46%']; }
+  cardImgEl(src, g){ const f=this.cardFocal(g); return React.createElement('img', { src, loading:'lazy', style:{ width:'100%', height:'100%', objectFit:'cover', transform:`scale(${f[0]})`, transformOrigin:f[1], display:'block' } }); }
+  EXTRA = {}; // phase-2 color-variant photos: { '1_coral': true, ... }
+  hasPhoto(id, color){ const p=this.PRODUCTS.find(x=>x.id===id); return color===p.colors[0] || !!this.EXTRA[id+'_'+color]; }
+  photoSrc(id, color, walk){ const p=this.PRODUCTS.find(x=>x.id===id); if(color===p.colors[0]) return walk ? `models/p${id}_w.png` : `models/p${id}.png`; return `models/p${id}_${color}.png`; }
+  shot(p, color, pose){ const base=pose==='walk'?`models/p${p.id}_w.png`:`models/p${p.id}.png`; return this.imgEl(this.photoSrc(p.id, color, pose==='walk'), base); }
+
+  // ---------- model illustration ----------
+  model(garment, color, pose, seed){
+    const key = 'm|'+garment+'|'+color+'|'+pose+'|'+seed;
+    this._mc = this._mc || {}; if(this._mc[key]) return this._mc[key];
+    const skins=['#f7ceb0','#f0bf98','#e7b489']; const hairs=['#2a201b','#43291c','#1d1815','#6b4427'];
+    const skin=skins[seed%3], hair=hairs[seed%4], C=this.hex(color);
+    const nTop='#ece6db', nBot='#c2cedd';
+    const sw = pose==='walk';
+    const lLeg=sw?-7:-2, rLeg=sw?11:3, lArm=sw?17:8, rArm=sw?-13:-7;
+    const legFill = garment==='active' ? C : skin;
+    const leg=(x,px,d,f)=>`<rect x="${x}" y="246" width="18" height="150" rx="9" fill="${f}" transform="rotate(${d} ${px} 250)"/>`;
+    const sh=(x,px,d,f)=>`<ellipse cx="${x}" cy="392" rx="13" ry="7" fill="${f}" transform="rotate(${d} ${px} 250)"/>`;
+    const arm=(x,px,d,f)=>`<rect x="${x}" y="110" width="15" height="108" rx="7.5" fill="${f}" transform="rotate(${d} ${px} 116)"/>`;
+    const hairLen = seed%2 ? 176 : 124;
+    const hairBack = `<path d="M78 70 Q78 18 120 18 Q162 18 162 70 L162 ${hairLen} Q120 ${hairLen+12} 78 ${hairLen} Z" fill="${hair}"/>`;
+    const torso = `<rect x="90" y="102" width="60" height="152" rx="26" fill="${skin}"/>`;
+    const neck = `<rect x="111" y="86" width="18" height="22" rx="6" fill="${skin}"/>`;
+    const head = `<circle cx="120" cy="62" r="30" fill="${skin}"/>`;
+    const hairFront = `<path d="M88 60 Q92 28 120 28 Q148 28 152 60 Q140 46 120 46 Q100 46 88 60 Z" fill="${hair}"/>`;
+    const face = `<circle cx="110" cy="63" r="2.6" fill="#3a2a22"/><circle cx="130" cy="63" r="2.6" fill="#3a2a22"/><ellipse cx="104" cy="72" rx="5" ry="3" fill="#ff9a8a" opacity=".5"/><ellipse cx="136" cy="72" rx="5" ry="3" fill="#ff9a8a" opacity=".5"/><path d="M114 75 Q120 80 126 75" stroke="#c4685a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    // sleeves / tops
+    const capSleeve=(f)=>`<rect x="71" y="105" width="27" height="42" rx="14" fill="${f}" transform="rotate(${lArm} 85.5 116)"/><rect x="142" y="105" width="27" height="42" rx="14" fill="${f}" transform="rotate(${rArm} 154.5 116)"/>`;
+    const longSleeve=(f)=>`<rect x="78" y="110" width="15" height="108" rx="7.5" fill="${f}" transform="rotate(${lArm} 85.5 116)"/><rect x="147" y="110" width="15" height="108" rx="7.5" fill="${f}" transform="rotate(${rArm} 154.5 116)"/>`;
+    let bottom='', top='';
+    const neutralShorts = `<rect x="92" y="242" width="56" height="46" rx="14" fill="${nBot}"/><line x1="120" y1="248" x2="120" y2="286" stroke="${this.hexA('navy',0.18)}" stroke-width="2"/>`;
+    if(garment==='tee'){ bottom=neutralShorts; top = `<rect x="84" y="104" width="72" height="106" rx="22" fill="${C}"/>` + capSleeve(C); }
+    else if(garment==='tank'){ bottom=neutralShorts; top = `<rect x="98" y="98" width="9" height="26" rx="4" fill="${C}"/><rect x="133" y="98" width="9" height="26" rx="4" fill="${C}"/><rect x="88" y="118" width="64" height="92" rx="18" fill="${C}"/>`; }
+    else if(garment==='dress'){ top = `<path d="M84 104 H156 L172 256 Q120 274 68 256 Z" fill="${C}"/>` + capSleeve(C); }
+    else if(garment==='swim'){ bottom = `<path d="M96 238 H144 L138 268 Q120 276 102 268 Z" fill="${C}"/>`; top = `<path d="M86 116 Q120 110 154 116 L150 140 Q120 132 90 140 Z" fill="${C}"/>`; }
+    else if(garment==='active'){ bottom = `<rect x="98" y="240" width="44" height="14" rx="6" fill="${this.hexA(color,0.55)}"/>`; top = `<rect x="88" y="112" width="64" height="46" rx="18" fill="${C}"/>`; }
+    else if(garment==='shorts'){ top = `<rect x="84" y="104" width="72" height="106" rx="22" fill="${nTop}"/>` + capSleeve(nTop); bottom = `<rect x="92" y="240" width="56" height="50" rx="14" fill="${C}"/><line x1="120" y1="246" x2="120" y2="288" stroke="rgba(0,0,0,.12)" stroke-width="2"/>`; }
+    else if(garment==='skirt'){ top = `<rect x="88" y="104" width="64" height="98" rx="20" fill="${nTop}"/>` + capSleeve(nTop); bottom = `<path d="M90 236 H150 L168 300 Q120 316 72 300 Z" fill="${C}"/>`; }
+    const svg = `<svg viewBox="0 0 240 420" width="100%" height="100%" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">${hairBack}${leg(99,108,lLeg,legFill)}${leg(123,132,rLeg,legFill)}${sh(106,108,lLeg,'#f4f1ea')}${sh(134,132,rLeg,'#f4f1ea')}${torso}${arm(78,85.5,lArm,skin)}${arm(147,154.5,rArm,skin)}${garment==='blouse'?longSleeve(C):''}${bottom}${top}${neck}${head}${hairFront}${face}</svg>`;
+    return this._mc[key] = this.el(svg);
+  }
+
+  // ---------- flat-lay garment ----------
+  flat(garment, color){
+    const key='f|'+garment+'|'+color; this._fc=this._fc||{}; if(this._fc[key]) return this._fc[key];
+    const C=this.hex(color); let s='';
+    if(garment==='tee') s=`<path d="M60 52 L82 40 Q100 54 118 40 L140 52 L158 74 L138 92 L130 82 L130 156 Q100 164 70 156 L70 82 L62 92 L42 74 Z" fill="${C}"/>`;
+    else if(garment==='tank') s=`<path d="M74 46 Q80 70 78 154 Q100 162 122 154 Q120 70 126 46 Q112 58 100 58 Q88 58 74 46 Z" fill="${C}"/>`;
+    else if(garment==='dress') s=`<path d="M70 48 L84 40 Q100 52 116 40 L130 48 L120 80 L142 164 Q100 176 58 164 L80 80 Z" fill="${C}"/>`;
+    else if(garment==='swim') s=`<path d="M58 72 Q100 60 142 72 Q132 96 100 90 Q68 96 58 72 Z" fill="${C}"/><path d="M74 118 H126 L116 152 Q100 160 84 152 Z" fill="${C}"/>`;
+    else if(garment==='active') s=`<path d="M64 66 Q100 56 136 66 L130 100 Q100 92 70 100 Z" fill="${C}"/><path d="M76 110 H124 L120 168 H104 L100 124 L96 168 H80 Z" fill="${C}"/>`;
+    else if(garment==='shorts') s=`<path d="M62 60 H138 L134 102 L128 150 H104 L100 104 L96 150 H72 L66 102 Z" fill="${C}"/>`;
+    else if(garment==='skirt') s=`<path d="M72 58 H128 L152 152 Q100 166 48 152 Z" fill="${C}"/><rect x="72" y="54" width="56" height="10" rx="3" fill="${this.hexA(color,0.7)}"/>`;
+    const svg=`<svg viewBox="0 0 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${s}</svg>`;
+    return this._fc[key]=this.el(svg);
+  }
+
+  colorsGroup(garment, colors){
+    const w = 200/colors.length;
+    const inner = colors.map((c,i)=>{ const C=this.hex(c); let s='';
+      const ox = i*w + w/2 - 100;
+      if(garment==='dress'||garment==='skirt') s=`<g transform="translate(${ox+100-30},40) scale(0.6)"><path d="M50 0 H110 L100 36 L130 200 Q80 216 30 200 L60 36 Z" fill="${C}"/></g>`;
+      else s=`<g transform="translate(${ox+100-26},60) scale(0.52)"><path d="M10 12 L34 0 Q52 12 70 0 L94 12 L110 34 L90 50 L84 42 L84 150 Q52 158 20 150 L20 42 L14 50 L-6 34 Z" fill="${C}"/></g>`;
+      return s; }).join('');
+    return this.el(`<svg viewBox="0 0 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`);
+  }
+
+  // ---------- size recommend ----------
+  recommend(h, w){
+    h=parseFloat(h); w=parseFloat(w);
+    if(!h||!w||h<120||h>200||w<25||w>150) return { show:false };
+    let base=w; if(h>=168) base-=3; if(h<156) base+=2;
+    let size, lo, hi;
+    if(base<=51){ size='S'; lo=38; hi=52; }
+    else if(base<=63){ size='M'; lo=51; hi=64; }
+    else { size='L'; lo=63; hi=80; }
+    let local=(base-lo)/(hi-lo); local=Math.max(0.04,Math.min(0.96,local));
+    const idxOffset = size==='S'?0 : size==='M'?1 : 2;
+    const fitPct = Math.round((idxOffset + local)/3*100);
+    const within = (fitPct%34);
+    let fitLabel = local<0.35 ? '타이트하게 맞아요' : local<0.7 ? '정사이즈예요' : '여유있게 맞아요';
+    return { show:true, size, fitPct:Math.max(4,Math.min(96,fitPct)), fitLabel };
+  }
+
+  // ---------- navigation ----------
+  goList = () => this.setState({ screen:'list' });
+  goCart = () => this.setState({ screen:'cart' });
+  goLogin = () => { this.setState({ screen:'login', authError:'' }); window.scrollTo&&window.scrollTo(0,0); };
+  goSignup = () => { this.setState({ screen:'signup', suError:'' }); window.scrollTo&&window.scrollTo(0,0); };
+  persist = (name) => { try{ if(this.state.autoLogin) localStorage.setItem('fizz_auth', name); else { sessionStorage.setItem('fizz_auth', name); localStorage.removeItem('fizz_auth'); } }catch(e){} };
+  componentDidMount(){ try{ const n = localStorage.getItem('fizz_auth') || sessionStorage.getItem('fizz_auth'); if(n) this.setState({ loggedIn:true, userName:n, autoLogin:!!localStorage.getItem('fizz_auth') }); }catch(e){} }
+  doLogin = () => { const S=this.state; const nm = (S.authEmail.split('@')[0]) || '게스트'; this.persist(nm); this.setState({ loggedIn:true, userName:nm, screen:'list', authPw:'', authError:'' }); this.flash(S.autoLogin?'로그인 상태가 유지됩니다 ✨':'환영해요! 로그인되었어요 ✨'); window.scrollTo&&window.scrollTo(0,0); };
+  doSignup = () => { const S=this.state; if(!S.suName||!S.suEmail||!S.suPw){ this.setState({ suError:'이름 · 이메일 · 비밀번호를 입력해주세요' }); return; } if(S.suPw.length<8){ this.setState({ suError:'비밀번호는 8자 이상이어야 해요' }); return; } if(S.suPw!==S.suPw2){ this.setState({ suError:'비밀번호가 일치하지 않아요' }); return; } if(!S.agree1||!S.agree2){ this.setState({ suError:'필수 약관에 동의해주세요' }); return; } this.persist(S.suName); this.setState({ loggedIn:true, userName:S.suName, screen:'list', suError:'' }); this.flash('가입 완료! 15% 쿠폰이 발급됐어요 🎉'); window.scrollTo&&window.scrollTo(0,0); };
+  logout = () => { try{ localStorage.removeItem('fizz_auth'); sessionStorage.removeItem('fizz_auth'); }catch(e){} this.setState({ loggedIn:false, userName:'' }); this.flash('로그아웃되었어요'); };
+  goDetail = (id) => { const p=this.PRODUCTS.find(x=>x.id===id); this.setState({ screen:'detail', curId:id, curColor:p.colors[0], curSize:null, qty:1, detailImg:'model', detailHover:false }); window.scrollTo&&window.scrollTo(0,0); };
+  flash = (msg) => { this.setState({ toast: msg }); clearTimeout(this._t); this._t=setTimeout(()=>this.setState({ toast:'' }),1900); };
+
+  addToCart = (buy) => {
+    const p=this.PRODUCTS.find(x=>x.id===this.state.curId);
+    const color=this.state.curColor||p.colors[0];
+    const rec=this.recommend(this.state.height,this.state.weight);
+    const size=this.state.curSize || (rec.show?rec.size:'M');
+    const key=p.id+'|'+color+'|'+size;
+    const cart=[...this.state.cart]; const ex=cart.find(c=>c.key===key);
+    if(ex) ex.qty+=this.state.qty; else cart.push({ key, id:p.id, color, size, qty:this.state.qty });
+    const selected={...this.state.selected}; selected[key]=true;
+    this.setState({ cart, selected });
+    if(buy){ this.setState({ screen:'cart' }); window.scrollTo&&window.scrollTo(0,0); }
+    else this.flash('장바구니에 담았어요 🛍');
+  };
+
+  renderVals(){
+    const S=this.state;
+    const shopName = this.props.shopName ?? 'fizz';
+
+    // header
+    const cats = this.CATS.map(name=>{ const on=S.cat===name; return { name, onClick:()=>this.setState({ cat:name, screen:'list' }), bg:on?'#ff6f61':'#fff', color:on?'#fff':'#6a655c', border:on?'#ff6f61':'#ece8df' }; });
+    const sorts = ['인기순','최신순','낮은가격순'].map(name=>{ const on=S.sort===name; return { name, onClick:()=>this.setState({ sort:name }), bg:on?'#33333a':'#f0ece3', color:on?'#fff':'#6a655c' }; });
+
+    // products list
+    let list=this.PRODUCTS.filter(p=>S.cat==='전체'||p.cat===S.cat);
+    if(S.sort==='낮은가격순') list=[...list].sort((a,b)=>a.price-b.price);
+    else if(S.sort==='최신순') list=[...list].sort((a,b)=>b.id-a.id);
+    const tagBg = t => t==='1위'?'#33333a':t==='쿠폰'?'#5fd0ad':t==='NEW'?'#2a4bd0':'#ff6f61';
+    const products = list.map(p=>{ const hov=S.hoverId===p.id; const disc = p.orig?Math.round((1-p.price/p.orig)*100):0;
+      return { id:p.id, brand:p.brand, name:p.name, priceFmt:this.fmt(p.price), discount:disc||'', tag:p.tag||'', tagBg:tagBg(p.tag), bg:this.bgFor(p),
+        idleEl:this.cardImgEl(`models/p${p.id}.png`, p.g), walkEl:this.imgEl(`models/p${p.id}_w.png`),
+        idleOp:hov?0:1, walkOp:hov?1:0,
+        onClick:()=>this.goDetail(p.id), onEnter:()=>this.setState({ hoverId:p.id }), onLeave:()=>this.setState({ hoverId:null }) };
+    });
+
+    // detail
+    const p=this.PRODUCTS.find(x=>x.id===S.curId)||this.PRODUCTS[0];
+    const color=S.curColor||p.colors[0];
+    const disc=p.orig?Math.round((1-p.price/p.orig)*100):0;
+    const chart=this.CHARTS[this.SIZECLASS[p.g]];
+    const rec=this.recommend(S.height,S.weight);
+    const recSize = rec.show?rec.size:null;
+    const curSize = S.curSize;
+    const sizeOpts=['S','M','L'].map(sz=>{ const on=curSize===sz; return { label:sz, rec:sz===recSize?'1':'', bg:on?'#33333a':'#fff', color:on?'#fff':'#3a3a3e', border:on?'#33333a':(sz===recSize?'#5fd0ad':'#e2ddd2'), onClick:()=>this.setState({ curSize:sz }) }; });
+    const colorOpts=p.colors.map(c=>({ name:this.KNAME[c]||c, hex:this.hex(c), ring:c===color?'#ff6f61':'transparent', onClick:()=>this.setState({ curColor:c }) }));
+    const thumbs=[{k:'model',label:'MODEL',num:'01',el:this.shot(p,color,'idle')},{k:'coordi',label:'STYLING',num:'02',el:this.imgEl(`models/p${p.id}_coordi.png`,`models/p${p.id}.png`)},{k:'flat',label:'PRODUCT',num:'03',el:this.imgEl(`models/p${p.id}_flat.png`,`models/p${p.id}.png`)}].map(t=>({ label:t.label, num:t.num, el:t.el, border:S.detailImg===t.k?'#ff6f61':'transparent', color:S.detailImg===t.k?'#ff6f61':'#b5b0a6', onClick:()=>this.setState({ detailImg:t.k }) }));
+    let bigEl;
+    if(S.detailImg==='walk') bigEl=this.shot(p,color,'walk');
+    else if(S.detailImg==='coordi') bigEl=this.imgEl(`models/p${p.id}_coordi.png`, `models/p${p.id}.png`);
+    else if(S.detailImg==='flat') bigEl=this.imgEl(`models/p${p.id}_flat.png`, `models/p${p.id}.png`);
+    else bigEl=this.shot(p,color,S.detailHover?'walk':'idle');
+    const colorViews=p.colors.map(c=>({ name:this.KNAME[c]||c, el:this.shot(p,c,'idle'), bg:this.bgFor({colors:[c,c]}), ring:c===color?'#ff6f61':'transparent', onClick:()=>this.setState({ curColor:c, detailImg:'model' }) }));
+    const sizeCols=chart.cols;
+    const sizeRows=['S','M','L'].map(sz=>({ size:sz, vals:chart.rows[sz], rec:sz===recSize?'1':'', bg:sz===recSize?'#f3fbf8':'transparent', color:sz===recSize?'#3a9b7e':'#3a3a3e' }));
+    const cur={ cat:p.cat, brand:p.brand, name:p.name, priceFmt:this.fmt(p.price), origFmt:p.orig?this.fmt(p.orig):'', discount:disc||'', reviews:(p.id*37+128),
+      colorName:this.KNAME[color]||color, colorOpts, sizeOpts, thumbs, bigEl, colorViews, sizeCols, sizeRows, desc:this.DESC[p.g], modelInfo:`모델 착용 · 키 168cm / 평소 사이즈 ${recSize||'S'} 착용`,
+      specRows:[{k:'소재',v:(this.FABRIC[p.g]||'-')},{k:'핏',v:(this.FIT[p.g]||'-')},{k:'비침',v:'거의 없음'},{k:'신축성',v:(['active','swim'].includes(p.g)?'우수':'적당')},{k:'시즌',v:'봄 · 여름'}],
+      care:(p.g==='swim'?['착용 후 맑은 물에 가볍게 세척','비틀어 짜지 마세요','그늘에 펴서 건조']:['찬물 단독 손세탁 권장','표백제 · 건조기 사용 금지','그늘에서 평평하게 건조']),
+      shipDesc:'오후 2시 이전 주문 시 당일 출고 · 평균 1~3일 소요 · 5만원 이상 무료배송',
+      returnDesc:(['swim'].includes(p.g)?'위생상 수영복은 교환 · 반품이 불가합니다':'수령 후 7일 이내 신청 · 단순변심 왕복배송비 6,000원 · 착용 · 세탁 시 불가'),
+      reviewList:[{name:'kim**', meta:'M 구매 · 25.06.10', stars:'★★★★★', text:'핏이 진짜 예뻐요! 여름에 시원하고 비침도 없어서 완전 만족합니다.'},{name:'lee**', meta:'S 구매 · 25.06.08', stars:'★★★★☆', text:'색감 화면이랑 동일해요. 키 160에 S 딱 맞네요. 재구매 의사 있어요!'},{name:'park**', meta:'M 구매 · 25.06.05', stars:'★★★★★', text:'재질 좋고 마감도 깔끔합니다. 데일리로 자주 손이 갈 것 같아요.'}],
+      bg:this.bgFor({colors:[color, p.colors[1]||color]}),
+      qtyInc:()=>this.setState({ qty:S.qty+1 }), qtyDec:()=>this.setState({ qty:Math.max(1,S.qty-1) }),
+      totalFmt:this.fmt(p.price*S.qty), addCart:()=>this.addToCart(false), buyNow:()=>this.addToCart(true),
+      onEnter:()=>this.setState({ detailHover:true }), onLeave:()=>this.setState({ detailHover:false }) };
+
+    // cart
+    const cartItems=S.cart.map(c=>{ const pr=this.PRODUCTS.find(x=>x.id===c.id); const checked=!!S.selected[c.key];
+      return { brand:pr.brand, name:pr.name, colorName:this.KNAME[c.color]||c.color, size:c.size, qty:c.qty, priceFmt:this.fmt(pr.price*c.qty), checked,
+        bg:this.bgFor({colors:[c.color,c.color]}), el:this.shot(pr,c.color,'idle'),
+        onToggle:()=>{ const sel={...S.selected}; sel[c.key]=!sel[c.key]; this.setState({ selected:sel }); },
+        onInc:()=>{ const cart=S.cart.map(x=>x.key===c.key?{...x,qty:x.qty+1}:x); this.setState({ cart }); },
+        onDec:()=>{ const cart=S.cart.map(x=>x.key===c.key?{...x,qty:Math.max(1,x.qty-1)}:x); this.setState({ cart }); },
+        onRemove:()=>{ const cart=S.cart.filter(x=>x.key!==c.key); const sel={...S.selected}; delete sel[c.key]; this.setState({ cart, selected:sel }); } };
+    });
+    const cartCount=S.cart.reduce((s,c)=>s+c.qty,0);
+    const selKeys=S.cart.filter(c=>S.selected[c.key]);
+    const allSelected=S.cart.length>0 && selKeys.length===S.cart.length;
+    const goods=S.cart.reduce((s,c)=>{ const pr=this.PRODUCTS.find(x=>x.id===c.id); return s+pr.price*c.qty; },0);
+    const discAmt=S.cart.reduce((s,c)=>{ const pr=this.PRODUCTS.find(x=>x.id===c.id); return s+(pr.orig?(pr.orig-pr.price)*c.qty:0); },0);
+    const couponDefs=[ {label:'쿠폰을 선택하세요', v:0}, {label:'5,000원 할인', v:1}, {label:'10% 할인', v:2}, {label:'무료배송 쿠폰', v:3} ];
+    const couponOpts=couponDefs.map(c=>({ label:c.label, value:String(c.v), sel:S.coupon===c.v }));
+    let couponDisc=0, freeShip=false;
+    if(S.coupon===1) couponDisc=Math.min(5000,goods);
+    else if(S.coupon===2) couponDisc=Math.round(goods*0.1);
+    else if(S.coupon===3) freeShip=true;
+    const ptsUsed=Math.min(parseInt(S.points||'0',10)||0, 3200, Math.max(0,goods-couponDisc));
+    const threshold=this.props.shopName?50000:50000;
+    let ship = (goods>=50000||freeShip||goods===0)?0:3000;
+    const total=Math.max(0, goods-couponDisc-ptsUsed+ship);
+    const sum={ goodsFmt:this.fmt(goods), discFmt:this.fmt(discAmt), couponFmt:this.fmt(couponDisc), pointsFmt:this.fmt(ptsUsed), shipLabel: ship===0?'무료':this.fmt(ship)+'원', totalFmt:this.fmt(total) };
+
+    return {
+      shopName, cats, sorts, products, productCount:products.length,
+      isList:S.screen==='list', isDetail:S.screen==='detail', isCart:S.screen==='cart',
+      isLogin:S.screen==='login', isSignup:S.screen==='signup',
+      goList:this.goList, goCart:this.goCart,
+      loggedIn:S.loggedIn, loggedOut:!S.loggedIn, userName:S.userName,
+      goLogin:this.goLogin, goSignup:this.goSignup, doLogin:this.doLogin, doSignup:this.doSignup, logout:this.logout,
+      authEmail:S.authEmail, authPw:S.authPw, authError:S.authError, autoLogin:S.autoLogin,
+      onAuthEmail:e=>this.setState({ authEmail:e.target.value }), onAuthPw:e=>this.setState({ authPw:e.target.value }), onAutoLogin:e=>this.setState({ autoLogin:e.target.checked }),
+      suName:S.suName, suEmail:S.suEmail, suPw:S.suPw, suPw2:S.suPw2, suPhone:S.suPhone, suError:S.suError,
+      onSuName:e=>this.setState({ suName:e.target.value }), onSuEmail:e=>this.setState({ suEmail:e.target.value }), onSuPw:e=>this.setState({ suPw:e.target.value }), onSuPw2:e=>this.setState({ suPw2:e.target.value }), onSuPhone:e=>this.setState({ suPhone:e.target.value }),
+      agreeAll:S.agree1&&S.agree2&&S.agree3, agree1:S.agree1, agree2:S.agree2, agree3:S.agree3,
+      onAgreeAll:e=>this.setState({ agree1:e.target.checked, agree2:e.target.checked, agree3:e.target.checked }),
+      onAgree1:e=>this.setState({ agree1:e.target.checked }), onAgree2:e=>this.setState({ agree2:e.target.checked }), onAgree3:e=>this.setState({ agree3:e.target.checked }),
+      hasCart:S.cart.length>0, cartEmpty:S.cart.length===0, cartCount,
+      cur, qty:S.qty, heightVal:S.height, weightVal:S.weight,
+      onHeight:e=>this.setState({ height:e.target.value }), onWeight:e=>this.setState({ weight:e.target.value }),
+      rec,
+      cartItems, allSelected,
+      onSelectAll:()=>{ const sel={}; if(!allSelected) S.cart.forEach(c=>sel[c.key]=true); this.setState({ selected:sel }); },
+      onDeleteSelected:()=>{ const cart=S.cart.filter(c=>!S.selected[c.key]); this.setState({ cart, selected:{} }); },
+      couponOpts, onCoupon:e=>this.setState({ coupon:parseInt(e.target.value,10) }),
+      pointsVal:S.points, onPoints:e=>this.setState({ points:e.target.value.replace(/[^0-9]/g,'') }), onAllPoints:()=>this.setState({ points:String(Math.min(3200,Math.max(0,goods-couponDisc))) }),
+      sum, toast:S.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

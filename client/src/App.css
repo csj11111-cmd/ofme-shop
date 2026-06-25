@@ -1,0 +1,44 @@
+.app {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.app__header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+}
+
+.app__header p {
+  margin: 0;
+  color: #555;
+}
+
+.app__status {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.app__status h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.app__status p {
+  margin: 0;
+}
+
+.app__status p[data-status='connected'] {
+  color: #15803d;
+}
+
+.app__status p[data-status='disconnected'] {
+  color: #b45309;
+}
+
+.app__status p[data-status='checking'] {
+  color: #6b7280;
+}
