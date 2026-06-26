@@ -88,6 +88,7 @@ const createProduct = async (req, res) => {
       fabric: data.fabric,
       fit: data.fit,
       images: savedImages,
+      colorImages: data.colorImages || undefined,
       isActive: data.isActive !== false,
       seller: req.user.id,
     });
@@ -138,6 +139,11 @@ const updateProduct = async (req, res) => {
 
       product.images = { ...currentImages, ...savedImages };
       product.markModified('images');
+    }
+
+    if (data.colorImages !== undefined) {
+      product.colorImages = data.colorImages;
+      product.markModified('colorImages');
     }
 
     await product.save();

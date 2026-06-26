@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "seed:catalog": "node scripts/seedCatalogToCloudinary.js"
+    "seed:catalog": "node scripts/seedCatalogToCloudinary.js",
+    "bootstrap:production": "node scripts/bootstrapProduction.js",
+    "patch:color-images": "node scripts/patchColorImages.js"
   },
   "keywords": [],
   "author": "",

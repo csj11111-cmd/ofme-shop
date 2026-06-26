@@ -19,11 +19,23 @@ export function getProductCodeFromId(id) {
 export function getCatalogNumericId(product) {
   const code = product?.productCode
 
-  if (!code) {
-    return null
+  if (code) {
+    const match = String(code).match(/^P-(\d+)$/i)
+
+    if (match) {
+      return Number(match[1])
+    }
   }
 
-  const match = String(code).match(/^P-(\d+)$/i)
+  const primary = product?.images?.primary
 
-  return match ? Number(match[1]) : null
+  if (primary) {
+    const match = String(primary).match(/\/models\/p(\d+)\.png/i)
+
+    if (match) {
+      return Number(match[1])
+    }
+  }
+
+  return null
 }

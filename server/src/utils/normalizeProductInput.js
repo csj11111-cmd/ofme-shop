@@ -62,6 +62,22 @@ const normalizeImagesInput = (images) => {
   return normalized;
 };
 
+const normalizeColorImagesInput = (colorImages) => {
+  if (!colorImages || typeof colorImages !== 'object' || Array.isArray(colorImages)) {
+    return null;
+  }
+
+  const normalized = {};
+
+  Object.entries(colorImages).forEach(([color, src]) => {
+    if (typeof src === 'string' && src.trim()) {
+      normalized[color] = src.trim();
+    }
+  });
+
+  return Object.keys(normalized).length > 0 ? normalized : null;
+};
+
 const applyProductDefaults = ({ g, description, fabric, fit }) => ({
   description: description?.trim() || DESCRIPTIONS[g] || '',
   fabric: fabric?.trim() || FABRIC[g] || '',
@@ -129,6 +145,7 @@ const parseProductInput = (body, { isUpdate = false } = {}) => {
   if (body.fit !== undefined || !isUpdate) data.fit = defaults.fit;
   if (body.isActive !== undefined) data.isActive = body.isActive !== false;
   if (body.images !== undefined) data.images = normalizeImagesInput(body.images);
+  if (body.colorImages !== undefined) data.colorImages = normalizeColorImagesInput(body.colorImages);
 
   return { data, errors: [] };
 };

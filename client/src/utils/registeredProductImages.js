@@ -18,6 +18,16 @@ export function getRegisteredImageSrc(product, type = 'primary') {
   return src.startsWith('/') ? src : `/${src}`
 }
 
+function getStaticAssetBase(product) {
+  const primary = product?.images?.primary
+
+  if (!primary || !String(primary).includes('/models/')) {
+    return ''
+  }
+
+  return String(primary).slice(0, String(primary).indexOf('/models/'))
+}
+
 function getColorImageSrc(product, color) {
   if (product?.colorImages?.[color]) {
     return product.colorImages[color]
@@ -25,11 +35,14 @@ function getColorImageSrc(product, color) {
 
   const catalogId = getCatalogNumericId(product)
 
-  if (catalogId) {
-    return `/models/p${catalogId}_${color}.png`
+  if (!catalogId) {
+    return null
   }
 
-  return null
+  const relativePath = `/models/p${catalogId}_${color}.png`
+  const assetBase = getStaticAssetBase(product)
+
+  return assetBase ? `${assetBase}${relativePath}` : relativePath
 }
 
 /** 기본색은 primary/walk, 다른 색상은 colorImages 또는 로컬 p{id}_{color}.png */

@@ -2732,3 +2732,88 @@
 .ofme__failed-list li + li {
   margin-top: 6px;
 }
+
+@media (max-width: 640px) {
+  .ofme__header-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'logo icons'
+      'search search';
+    gap: 10px 12px;
+    align-items: center;
+    padding-bottom: 10px;
+  }
+
+  .ofme__logo {
+    grid-area: logo;
+    font-size: 22px;
+  }
+
+  .ofme__search {
+    grid-area: search;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ofme__search input {
+    font-size: 13px;
+  }
+
+  .ofme__icons {
+    grid-area: icons;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+    font-size: 11px;
+    max-width: 100%;
+  }
+
+  .ofme__wish-link {
+    display: none;
+  }
+
+  .ofme__cart-link {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .ofme__user-greeting {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .ofme__user-greeting-suffix {
+    display: none;
+  }
+
+  .ofme__user-menu-caret {
+    font-size: 13px;
+  }
+
+  .ofme a.ofme__admin-link,
+  .ofme a.ofme__seller-link {
+    padding: 4px 8px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+
+  .ofme__cats {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 9px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ofme__cat-btn {
+    flex: 0 0 auto;
+  }
+
+  .ofme__detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ofme__admin-hero h1 {
+    font-size: 24px;
+  }
+}

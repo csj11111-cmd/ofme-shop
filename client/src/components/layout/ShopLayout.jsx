@@ -43,7 +43,7 @@ function Header() {
             <input placeholder="여름 신상, 브랜드를 검색해보세요" />
           </div>
           <div className="ofme__icons">
-            <span className="ofme__icons-muted">♡ 찜</span>
+            <span className="ofme__icons-muted ofme__wish-link">♡ 찜</span>
             {user && (
               <Link to="/cart" className="ofme__cart-link">
                 <span className="ofme__cart-icon">🛒</span> 장바구니
@@ -60,7 +60,7 @@ function Header() {
                   >
                     <span className="ofme__user-greeting">
                       <span className="ofme__user-name">{user.name}</span>
-                      님 반갑습니다
+                      <span className="ofme__user-greeting-suffix">님 반갑습니다</span>
                     </span>
                     <span className="ofme__user-menu-caret">▾</span>
                   </button>
